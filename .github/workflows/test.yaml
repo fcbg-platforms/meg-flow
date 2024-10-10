@@ -1,8 +1,6 @@
 name: test
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [main]
-  workflow_dispatch:
 
 jobs:
   pytest:
@@ -16,4 +14,7 @@ jobs:
         shell: bash
     steps:
       - run: ls -l .
-      - run: mkdir test
+      - run: mkdir /home/docker/test
+      - run: ls -l /home/docker
+      - run: mkdir /home/docker/test2
+      - run: ls -l /home/docker
