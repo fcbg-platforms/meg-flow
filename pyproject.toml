@@ -138,6 +138,10 @@ ignore-decorators = ["flow.utils._docs.copy_doc"]
 [tool.setuptools]
 include-package-data = false
 
+[tool.setuptools.package-data]
+'flow.oddball.sounds' = ['*.wav']
+'flow.oddball.trialList' = ['*.txt']
+
 [tool.setuptools.packages.find]
 exclude = ['flow*tests']
 include = ['flow*']
