@@ -16,5 +16,3 @@ jobs:
       - run: ls -l .
       - run: mkdir /home/docker/test
       - run: ls -l /home/docker
-      - run: mkdir /home/docker/test2
-      - run: ls -l /home/docker
