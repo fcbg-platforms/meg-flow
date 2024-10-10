@@ -1,0 +1,19 @@
+name: test
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+    name: test gh-runner
+    runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - run: ls -l .
+      - run: mkdir test
