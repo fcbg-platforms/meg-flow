@@ -24,51 +24,33 @@ dependencies = [
   'packaging',
   'psutil',
 ]
-description = 'Template for python projects.'
+description = 'Flow study within the MEG.'
 keywords = [
   'python',
-  'template',
+  'meg',
+  'flow',
 ]
 license = {file = 'LICENSE'}
 maintainers = [
   {email = 'mathieu.scheltienne@gmail.com', name = 'Mathieu Scheltienne'},
 ]
-name = 'template'
+name = 'flow'
 readme = 'README.md'
 requires-python = '>=3.9'
 version = '0.1.0'
 
 [project.optional-dependencies]
 all = [
-  'template[build]',
-  'template[doc]',
-  'template[stubs]',
-  'template[style]',
-  'template[test]',
+  'flow[build]',
+  'flow[style]',
+  'flow[test]',
 ]
 build = [
   'build',
   'twine',
 ]
-doc = [
-  'furo',
-  'intersphinx_registry',
-  'matplotlib',
-  'memory-profiler',
-  'numpydoc',
-  'sphinx',
-  'sphinx-copybutton',
-  'sphinx-design',
-  'sphinx-gallery',
-  'sphinx-issues',
-  'sphinxcontrib-bibtex',
-]
 full = [
-  'template[all]',
-]
-stubs = [
-  'mypy',
-  'ruff>=0.6.0',
+  'flow[all]',
 ]
 style = [
   'bibclean',
@@ -85,13 +67,13 @@ test = [
 ]
 
 [project.scripts]
-template = 'template.commands.main:run'
+flow = 'flow.commands.main:run'
 
 [project.urls]
-documentation = 'https://github.com/mscheltienne/template-python'
-homepage = 'https://github.com/mscheltienne/template-python'
-source = 'https://github.com/mscheltienne/template-python'
-tracker = 'https://github.com/mscheltienne/template-python/issues'
+documentation = 'https://github.com/fcbg-platforms/meg-flow'
+homepage = 'https://github.com/fcbg-platforms/meg-flow'
+source = 'https://github.com/fcbg-platforms/meg-flow'
+tracker = 'https://github.com/fcbg-platforms/meg-flow/issues'
 
 [tool.codespell]
 check-filenames = true
@@ -113,8 +95,8 @@ cover_pylib = false
 omit = [
   '**/__init__.py',
   '**/conftest.py',
-  '**/template/_version.py',
-  '**/template/utils/_fixes.py',
+  '**/flow/_version.py',
+  '**/flow/utils/_fixes.py',
   '**/tests/**',
 ]
 
@@ -150,14 +132,14 @@ select = ['A', 'B', 'D', 'E', 'F', 'G', 'I', 'LOG', 'NPY', 'PIE', 'PT', 'T20', '
 
 [tool.ruff.lint.pydocstyle]
 convention = 'numpy'
-ignore-decorators = ["template.utils._docs.copy_doc"]
+ignore-decorators = ["flow.utils._docs.copy_doc"]
 
 [tool.setuptools]
 include-package-data = false
 
 [tool.setuptools.packages.find]
-exclude = ['template*tests']
-include = ['template*']
+exclude = ['flow*tests']
+include = ['flow*']
 
 [tool.tomlsort]
 all = true
