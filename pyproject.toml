@@ -24,6 +24,7 @@ dependencies = [
   'packaging',
   'Phidget22',
   'psutil',
+  'pyzmq',
 ]
 description = 'Flow study within the MEG.'
 keywords = [

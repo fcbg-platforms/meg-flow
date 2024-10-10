@@ -3,6 +3,8 @@ from __future__ import annotations
 from importlib.resources import files
 from typing import TYPE_CHECKING
 
+import zmq
+
 from ..utils._checks import check_type, check_value, ensure_path
 from ..utils._imports import import_optional_dependency
 from ..utils.logs import logger
@@ -19,17 +21,16 @@ _TRIAL_LIST_MAPPING = [
 ]
 _DURATION_STIM: float = 0.2  # seconds
 _DURATION_ITI: float = 1.0  # seconds
-_DURATION_FLICKERING: float = 0.05  # seconds
 _TRIGGERS: dict[str, int] = {
     "standard": 1,
     "target": 2,
     "novel": 3,
+    "hold": 4,
 }
 
 # check the variables
 check_type(_DURATION_STIM, ("numeric",), "_DURATION_STIM")
 check_type(_DURATION_ITI, ("numeric",), "_DURATION_ITI")
-check_type(_DURATION_FLICKERING, ("numeric",), "_DURATION_FLICKERING")
 assert 0.3 < _DURATION_ITI - _DURATION_STIM - 0.2
 assert all(elt in _TRIGGERS for elt in ("standard", "target", "novel"))
 
@@ -55,6 +56,11 @@ def oddball(condition: str, mock: bool = False) -> None:
     check_type(condition, (str,), "condition")
     check_value(condition, _TRIAL_LIST_MAPPING, "condition")
     check_type(mock, (bool,), "mock")
+    # create the ZeroMQ context and a subscriber socket to receive messages from Unity
+    context = zmq.Context()
+    socket = context.socket(zmq.PULL)
+    socket.connect("tcp://localhost:5555")
+    hold = False
     # load trials and sounds
     fname = files("flow.oddball") / "trialList" / f"{condition}.txt"
     trials = parse_trial_list(fname)
@@ -65,6 +71,21 @@ def oddball(condition: str, mock: bool = False) -> None:
     input(">>> Press ENTER to start.")
     # main loop
     for k, trial in trials:
+        # check for messages from Unity
+        try:
+            message = socket.recv(flags=zmq.NOBLOCK)
+            logger.info("Received message from Unity: %s", message)
+            if message == b"hold":
+                hold = True
+            elif message == b"continue":
+                hold = False
+        except zmq.Again:
+            pass  # no message received
+        while hold:
+            sounds["standard"].play(when=ptb.GetSecs() + _DURATION_STIM)
+            wait(_DURATION_STIM, hogCPUperiod=_DURATION_STIM)
+            trigger.signal(_TRIGGERS["hold"])
+            wait(_DURATION_ITI - _DURATION_STIM)
         logger.info("Trial %i / %i: %s", k, trials[-1][0], trial)
         # retrieve trigger value and sound
         if trial in _TRIGGERS:
