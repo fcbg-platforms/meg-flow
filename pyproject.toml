@@ -22,6 +22,7 @@ dependencies = [
   'click',
   'numpy>=1.21,<3',
   'packaging',
+  'Phidget22',
   'psutil',
 ]
 description = 'Flow study within the MEG.'
