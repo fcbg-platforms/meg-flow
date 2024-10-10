@@ -15,3 +15,4 @@ jobs:
     steps:
       - run: ls -l .
       - run: mkdir /home/docker/test
+      - run: ls -l /home/docker
