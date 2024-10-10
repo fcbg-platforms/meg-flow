@@ -13,6 +13,5 @@ jobs:
       run:
         shell: bash
     steps:
-      - run: ls -l .
       - run: mkdir /home/docker/test
       - run: ls -l /home/docker
