@@ -27,9 +27,9 @@ dependencies = [
 ]
 description = 'Flow study within the MEG.'
 keywords = [
-  'python',
-  'meg',
   'flow',
+  'meg',
+  'python',
 ]
 license = {file = 'LICENSE'}
 maintainers = [
