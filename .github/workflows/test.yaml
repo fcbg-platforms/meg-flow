@@ -2,7 +2,6 @@ name: test
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   pytest:
