@@ -58,8 +58,10 @@ def oddball(condition: str, mock: bool = False) -> None:
     check_type(mock, (bool,), "mock")
     # create the ZeroMQ context and a subscriber socket to receive messages from Unity
     context = zmq.Context()
-    socket = context.socket(zmq.PULL)
-    socket.connect("tcp://localhost:5555")
+    socket = context.socket(zmq.REP)  # REP: Server side for REQ/REP pattern
+    socket.bind("tcp://localhost:5555")  # Bind to port 5555
+    poller = zmq.Poller()
+    poller.register(socket, zmq.POLLIN)
     hold = False
     # load trials and sounds
     fname = files("flow.oddball") / "trialList" / f"{condition}.txt"
@@ -70,22 +72,26 @@ def oddball(condition: str, mock: bool = False) -> None:
     # prepare fixation cross window
     input(">>> Press ENTER to start.")
     # main loop
-    for k, trial in trials:
+    counter = 0
+    while counter < len(trials):
+        k, trial = trials[counter]
         # check for messages from Unity
-        try:
-            message = socket.recv(flags=zmq.NOBLOCK)
+        socks = dict(poller.poll(timeout=10))
+        if socket in socks and socks[socket] == zmq.POLLIN:
+            message = socket.recv_string()  # Receive the message
             logger.info("Received message from Unity: %s", message)
-            if message == b"hold":
+            socket.send_string("ACK")
+            if message == "hold":
                 hold = True
-            elif message == b"continue":
+            elif message == "continue":
                 hold = False
-        except zmq.Again:
-            pass  # no message received
-        while hold:
+        if hold:
+            logger.info("Holding at trial %i / %i", k, trials[-1][0])
             sounds["standard"].play(when=ptb.GetSecs() + _DURATION_STIM)
             wait(_DURATION_STIM, hogCPUperiod=_DURATION_STIM)
             trigger.signal(_TRIGGERS["hold"])
             wait(_DURATION_ITI - _DURATION_STIM)
+            continue
         logger.info("Trial %i / %i: %s", k, trials[-1][0], trial)
         # retrieve trigger value and sound
         if trial in _TRIGGERS:
@@ -99,6 +105,7 @@ def oddball(condition: str, mock: bool = False) -> None:
         sound.play(when=ptb.GetSecs() + _DURATION_STIM)
         wait(_DURATION_STIM, hogCPUperiod=_DURATION_STIM)
         trigger.signal(value)
+        counter += 1
         wait(_DURATION_ITI - _DURATION_STIM)
     input(">>> Press ENTER to continue and close the window.")
 
