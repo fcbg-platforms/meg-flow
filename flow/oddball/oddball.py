@@ -21,12 +21,14 @@ _TRIAL_LIST_MAPPING = [
 ]
 _DURATION_STIM: float = 0.2  # seconds
 _DURATION_ITI: float = 1.0  # seconds
+_TRIGGER_ADDRESS: int | str = 0x2FB8  # 0x2FBO8 or /dev/parport0
 _TRIGGERS: dict[str, int] = {
     "standard": 1,
     "target": 2,
     "novel": 3,
     "hold": 4,
 }
+_AUDIO_DEVICE: str = "Speakers (SPL Crimson 2.9.86.25)"
 
 # check the variables
 check_type(_DURATION_STIM, ("numeric",), "_DURATION_STIM")
@@ -68,7 +70,7 @@ def oddball(condition: str, mock: bool = False) -> None:
     trials = parse_trial_list(fname)
     sounds = _load_sounds(trials)
     # prepare triggers
-    trigger = MockTrigger() if mock else ParallelPortTrigger(0x2FB8)
+    trigger = MockTrigger() if mock else ParallelPortTrigger(_TRIGGER_ADDRESS)
     # prepare fixation cross window
     input(">>> Press ENTER to start.")
     # main loop
@@ -112,6 +114,10 @@ def oddball(condition: str, mock: bool = False) -> None:
 
 def _load_sounds(trials) -> dict[str, SoundPTB]:
     """Create psychopy sound objects."""
+    from psychopy.sound import setDevice
+
+    setDevice(_AUDIO_DEVICE, kind="output")
+
     from psychopy.sound.backend_ptb import SoundPTB
 
     sounds = dict()
