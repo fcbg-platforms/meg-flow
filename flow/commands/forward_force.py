@@ -25,8 +25,9 @@ def run(ip: str, port: int) -> None:
         socket.sendto(bytes(str(currentForce), encoding="ascii"), (ip, port))
 
     voltageRatioInput0 = VoltageRatioInput()
-    voltageRatioInput0.setOnVoltageRatioChangeHandler(_callback_on_voltage_ratio_change)
     voltageRatioInput0.openWaitForAttachment(500)
-    voltageRatioInput0.setDataInterval(10)
+    voltageRatioInput0.setBridgeGain(4)
+    voltageRatioInput0.setDataInterval(1)
+    voltageRatioInput0.setOnVoltageRatioChangeHandler(_callback_on_voltage_ratio_change)
     input(">>> Press any key to stop the force measurement..")
     voltageRatioInput0.close()
