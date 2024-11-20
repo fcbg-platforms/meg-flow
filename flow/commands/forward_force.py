@@ -5,9 +5,9 @@ import socket as sc
 import click
 from Phidget22.Devices.VoltageRatioInput import VoltageRatioInput
 
-_GAIN: float = 266.643
+_GAIN: float = 262.36
 _GRAVITY_CONSTANT: float = 9.806
-_OFFSET: float = 0.0065339
+_OFFSET: float = 0.0092264
 
 
 @click.command(name="forward-force")
