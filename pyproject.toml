@@ -27,6 +27,7 @@ dependencies = [
   'psutil',
   'psychopy',
   'psychtoolbox',
+  'pynput',
   'pyzmq',
 ]
 description = 'Flow study within the MEG.'
