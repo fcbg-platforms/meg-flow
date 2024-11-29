@@ -30,6 +30,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install psychopy
+        uses: mscheltienne/setup-psychopy@0.1.6
       - name: Install uv and package
         run: |
           python -m pip install --quiet uv
