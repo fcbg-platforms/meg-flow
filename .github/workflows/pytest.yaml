@@ -24,6 +24,9 @@ jobs:
       run:
         shell: bash
     steps:
+      - uses: pyvista/setup-headless-display-action@v2
+        with:
+          qt: true
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
