@@ -14,8 +14,10 @@ from ._config import (
     TRIGGER_ADDRESS,
     TRIGGERS,
 )
+from ._time import sleep
 from ._utils import _load_sounds, parse_trial_list
 
+_MESSAGES: dict[str, bool] = {"hold": True, "continue": False}
 _TRIAL_LIST_MAPPING: list[str] = [
     elt.stem
     for elt in (files("flow.oddball") / "trialList").iterdir()
@@ -39,7 +41,6 @@ def oddball(condition: str, mock: bool = False) -> None:
 
     import psychtoolbox as ptb
     from byte_triggers import MockTrigger, ParallelPortTrigger
-    from psychopy.core import wait
 
     check_type(condition, (str,), "condition")
     check_value(condition, _TRIAL_LIST_MAPPING, "condition")
@@ -50,7 +51,6 @@ def oddball(condition: str, mock: bool = False) -> None:
     socket.bind("tcp://localhost:5555")  # Bind to port 5555
     poller = zmq.Poller()
     poller.register(socket, zmq.POLLIN)
-    hold = False
     # load trials and sounds
     fname = files("flow.oddball") / "trialList" / f"{condition}.txt"
     trials = parse_trial_list(fname)
@@ -63,22 +63,14 @@ def oddball(condition: str, mock: bool = False) -> None:
     counter = 0
     while counter < len(trials):
         k, trial = trials[counter]
-        # check for messages from Unity
-        socks = dict(poller.poll(timeout=10))
-        if socket in socks and socks[socket] == zmq.POLLIN:
-            message = socket.recv_string()  # Receive the message
-            logger.info("Received message from Unity: %s", message)
-            socket.send_string("ACK")
-            if message == "hold":
-                hold = True
-            elif message == "continue":
-                hold = False
+        # check for a message from Unity and potential hold
+        hold = _check_message_for_hold(socket, poller)
         if hold:
             logger.info("Holding at trial %i / %i", k, trials[-1][0])
             sounds["standard"].play(when=ptb.GetSecs() + DURATION_STIM)
-            wait(DURATION_STIM, hogCPUperiod=DURATION_STIM)
+            sleep(DURATION_STIM)
             trigger.signal(TRIGGERS["hold"])
-            wait(DURATION_ITI - DURATION_STIM)
+            sleep(DURATION_ITI - DURATION_STIM)
             continue
         logger.info("Trial %i / %i: %s", k, trials[-1][0], trial)
         # retrieve trigger value and sound
@@ -88,11 +80,23 @@ def oddball(condition: str, mock: bool = False) -> None:
         else:
             assert trial.startswith("wav"), f"Error with trial ({k}, {trial})."
             value = TRIGGERS["novel"]
-        sound = sounds[trial]
         # schedule sound, wait, and deliver triggers simultanouesly with the sound
-        sound.play(when=ptb.GetSecs() + DURATION_STIM)
-        wait(DURATION_STIM, hogCPUperiod=_URATION_STIM)
+        sounds[trial].play(when=ptb.GetSecs() + DURATION_STIM)
+        sleep(DURATION_STIM)
         trigger.signal(value)
         counter += 1
-        wait(DURATION_ITI - DURATION_STIM)
+        sleep(DURATION_ITI - DURATION_STIM)
     input(">>> Press ENTER to continue and close the window.")
+
+
+def _check_message_for_hold(socket, poller) -> bool:
+    """Check if we received a message from Unity."""
+    socks = dict(poller.poll(timeout=10))
+    if socket in socks and socks[socket] == zmq.POLLIN:
+        message = socket.recv_string()  # Receive the message
+        logger.info("Received message from Unity: %s", message)
+        socket.send_string("ACK")
+        hold = _MESSAGES.get(message)
+    else:
+        hold = False
+    return hold
