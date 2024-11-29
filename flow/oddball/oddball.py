@@ -3,11 +3,12 @@ from __future__ import annotations
 import time
 from importlib.resources import files
 
+import psychtoolbox as ptb
 import zmq
+from byte_triggers import MockTrigger, ParallelPortTrigger
 from psychopy.hardware.keyboard import Keyboard
 
 from ..utils._checks import check_type, check_value
-from ..utils._imports import import_optional_dependency
 from ..utils.logs import logger, warn
 from ._config import (
     AUDIO_DEVICE,
@@ -37,13 +38,6 @@ def oddball(condition: str, mock: bool = False) -> None:
     mock : bool
         If True, uses a MockTrigger instead of a ParallelPortTrigger.
     """
-    import_optional_dependency("byte_triggers")
-    import_optional_dependency("psychopy")
-    import_optional_dependency("psychtoolbox")
-
-    import psychtoolbox as ptb
-    from byte_triggers import MockTrigger, ParallelPortTrigger
-
     check_type(condition, (str,), "condition")
     check_value(condition, _TRIAL_LIST_MAPPING, "condition")
     check_type(mock, (bool,), "mock")

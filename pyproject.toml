@@ -19,11 +19,14 @@ classifiers = [
   'Programming Language :: Python :: 3.9',
 ]
 dependencies = [
+  'byte_triggers',
   'click',
   'numpy>=1.21,<3',
   'packaging',
   'Phidget22',
   'psutil',
+  'psychopy',
+  'psychtoolbox',
   'pyzmq',
 ]
 description = 'Flow study within the MEG.'
