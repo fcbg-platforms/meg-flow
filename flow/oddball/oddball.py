@@ -75,14 +75,10 @@ def oddball(condition: str, mock: bool = False) -> None:
         # handle trigger and sound
         sounds[trial].play(when=ptb.GetSecs() + DURATION_STIM)
         sleep(DURATION_STIM)
-        trigger.signal(TRIGGERS[trial if trial in TRIGGERS else "novel"])
+        trigger.signal(TRIGGERS.get(trial, TRIGGERS["novel"]))
         counter += 1
-        if trial in TRIGGERS:  # sanity-check the trial and handle inter-trial sleep
-            assert trial in ("standard", "target"), f"Error with trial ({k}, {trial})."
-            sleep(DURATION_ITI - DURATION_STIM)
-        else:
-            assert trial.startswith("wav"), f"Error with trial ({k}, {trial})."
-            _sleep_and_monitor_keyboard(DURATION_ITI - DURATION_STIM, keyboard)
+        # handle inter-trial period
+        _sleep_and_monitor_keyboard(DURATION_ITI - DURATION_STIM, keyboard)
     input(">>> Press ENTER to continue and close the window.")
 
 
