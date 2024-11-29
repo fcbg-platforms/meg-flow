@@ -3,11 +3,15 @@ from __future__ import annotations
 from importlib.resources import files
 from typing import TYPE_CHECKING
 
-from ..utils._checks import check_value
+from psychopy import logging
+
+from ..utils._checks import check_value, ensure_path
 from ..utils.logs import logger, warn
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+    from psychopy.sound.backend_ptb import SoundPTB
 
 
 def list_novel_sounds() -> list[str]:
@@ -51,3 +55,42 @@ def parse_trial_list(fname: Path) -> list[tuple[int, str]]:
             expected_idx += 1
         lines_checked.append((idx, trial))
     return lines_checked
+
+
+def _load_sounds(
+    trials: list[tuple[int, str]], duration: float, device: str
+) -> dict[str, SoundPTB]:
+    """Create psychopy sound objects."""
+    from psychopy.sound import setDevice
+
+    setDevice(device, kind="output")
+
+    from psychopy.sound.backend_ptb import SoundPTB
+
+    sounds = dict()
+    fname_standard = files("flow.oddball") / "sounds" / "low_tone-48000.wav"
+    fname_standard = ensure_path(fname_standard, must_exist=True)
+    sounds["standard"] = SoundPTB(
+        fname_standard, secs=duration, hamming=True, name="stim", sampleRate=48000
+    )
+    fname_target = files("flow.oddball") / "sounds" / "high_tone-48000.wav"
+    fname_target = ensure_path(fname_target, must_exist=True)
+    sounds["target"] = SoundPTB(
+        fname_target, secs=duration, hamming=True, name="stim", sampleRate=48000
+    )
+
+    novels = [trial[1] for trial in trials if trial[1].startswith("wav")]
+    for novel in novels:
+        fname = files("flow.oddball") / "sounds" / f"{novel}-48000.wav"
+        sounds[novel] = SoundPTB(
+            fname, secs=duration, hamming=True, name="stim", sampleRate=48000
+        )
+    return sounds
+
+
+class _disable_psychopy_logs:
+    def __enter__(self) -> None:
+        logging.console.setLevel(logging.CRITICAL)
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        logging.console.setLevel(logging.WARNING)

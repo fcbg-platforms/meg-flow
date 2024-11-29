@@ -1,40 +1,26 @@
 from __future__ import annotations
 
 from importlib.resources import files
-from typing import TYPE_CHECKING
 
 import zmq
 
-from ..utils._checks import check_type, check_value, ensure_path
+from ..utils._checks import check_type, check_value
 from ..utils._imports import import_optional_dependency
 from ..utils.logs import logger
-from ._utils import parse_trial_list
+from ._config import (
+    AUDIO_DEVICE,
+    DURATION_ITI,
+    DURATION_STIM,
+    TRIGGER_ADDRESS,
+    TRIGGERS,
+)
+from ._utils import _load_sounds, parse_trial_list
 
-if TYPE_CHECKING:
-    from psychopy.sound.backend_ptb import SoundPTB
-
-
-_TRIAL_LIST_MAPPING = [
+_TRIAL_LIST_MAPPING: list[str] = [
     elt.stem
     for elt in (files("flow.oddball") / "trialList").iterdir()
     if elt.is_file() and elt.suffix == ".txt"
 ]
-_DURATION_STIM: float = 0.2  # seconds
-_DURATION_ITI: float = 1.0  # seconds
-_TRIGGER_ADDRESS: int | str = 0x2FB8  # 0x2FBO8 or /dev/parport0
-_TRIGGERS: dict[str, int] = {
-    "standard": 1,
-    "target": 2,
-    "novel": 3,
-    "hold": 4,
-}
-_AUDIO_DEVICE: str = "Speakers (SPL Crimson 2.9.86.25)"
-
-# check the variables
-check_type(_DURATION_STIM, ("numeric",), "_DURATION_STIM")
-check_type(_DURATION_ITI, ("numeric",), "_DURATION_ITI")
-assert 0.3 < _DURATION_ITI - _DURATION_STIM - 0.2
-assert all(elt in _TRIGGERS for elt in ("standard", "target", "novel"))
 
 
 def oddball(condition: str, mock: bool = False) -> None:
@@ -68,9 +54,9 @@ def oddball(condition: str, mock: bool = False) -> None:
     # load trials and sounds
     fname = files("flow.oddball") / "trialList" / f"{condition}.txt"
     trials = parse_trial_list(fname)
-    sounds = _load_sounds(trials)
+    sounds = _load_sounds(trials, DURATION_STIM, AUDIO_DEVICE)
     # prepare triggers
-    trigger = MockTrigger() if mock else ParallelPortTrigger(_TRIGGER_ADDRESS)
+    trigger = MockTrigger() if mock else ParallelPortTrigger(TRIGGER_ADDRESS)
     # prepare fixation cross window
     input(">>> Press ENTER to start.")
     # main loop
@@ -89,53 +75,24 @@ def oddball(condition: str, mock: bool = False) -> None:
                 hold = False
         if hold:
             logger.info("Holding at trial %i / %i", k, trials[-1][0])
-            sounds["standard"].play(when=ptb.GetSecs() + _DURATION_STIM)
-            wait(_DURATION_STIM, hogCPUperiod=_DURATION_STIM)
-            trigger.signal(_TRIGGERS["hold"])
-            wait(_DURATION_ITI - _DURATION_STIM)
+            sounds["standard"].play(when=ptb.GetSecs() + DURATION_STIM)
+            wait(DURATION_STIM, hogCPUperiod=DURATION_STIM)
+            trigger.signal(TRIGGERS["hold"])
+            wait(DURATION_ITI - DURATION_STIM)
             continue
         logger.info("Trial %i / %i: %s", k, trials[-1][0], trial)
         # retrieve trigger value and sound
-        if trial in _TRIGGERS:
+        if trial in TRIGGERS:
             assert trial in ("standard", "target"), f"Error with trial ({k}, {trial})."
-            value = _TRIGGERS[trial]
+            value = TRIGGERS[trial]
         else:
             assert trial.startswith("wav"), f"Error with trial ({k}, {trial})."
-            value = _TRIGGERS["novel"]
+            value = TRIGGERS["novel"]
         sound = sounds[trial]
         # schedule sound, wait, and deliver triggers simultanouesly with the sound
-        sound.play(when=ptb.GetSecs() + _DURATION_STIM)
-        wait(_DURATION_STIM, hogCPUperiod=_DURATION_STIM)
+        sound.play(when=ptb.GetSecs() + DURATION_STIM)
+        wait(DURATION_STIM, hogCPUperiod=_URATION_STIM)
         trigger.signal(value)
         counter += 1
-        wait(_DURATION_ITI - _DURATION_STIM)
+        wait(DURATION_ITI - DURATION_STIM)
     input(">>> Press ENTER to continue and close the window.")
-
-
-def _load_sounds(trials) -> dict[str, SoundPTB]:
-    """Create psychopy sound objects."""
-    from psychopy.sound import setDevice
-
-    setDevice(_AUDIO_DEVICE, kind="output")
-
-    from psychopy.sound.backend_ptb import SoundPTB
-
-    sounds = dict()
-    fname_standard = files("flow.oddball") / "sounds" / "low_tone-48000.wav"
-    fname_standard = ensure_path(fname_standard, must_exist=True)
-    sounds["standard"] = SoundPTB(
-        fname_standard, secs=_DURATION_STIM, hamming=True, name="stim", sampleRate=48000
-    )
-    fname_target = files("flow.oddball") / "sounds" / "high_tone-48000.wav"
-    fname_target = ensure_path(fname_target, must_exist=True)
-    sounds["target"] = SoundPTB(
-        fname_target, secs=_DURATION_STIM, hamming=True, name="stim", sampleRate=48000
-    )
-
-    novels = [trial[1] for trial in trials if trial[1].startswith("wav")]
-    for novel in novels:
-        fname = files("flow.oddball") / "sounds" / f"{novel}-48000.wav"
-        sounds[novel] = SoundPTB(
-            fname, secs=_DURATION_STIM, hamming=True, name="stim", sampleRate=48000
-        )
-    return sounds
