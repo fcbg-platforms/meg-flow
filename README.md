@@ -52,7 +52,7 @@ to the installation of the `flow` package:
 
 > [!IMPORTANT]
 > As of writing, [psychopy](https://www.psychopy.org/) is still limited to Python 3.10,
-> thus make sure to create a virtual environment with a compatible versio of Python.
+> thus make sure to create a virtual environment with a compatible version of Python.
 
 ## Usage
 
