@@ -12,9 +12,19 @@ _OFFSET: float = 0.0092264
 
 @click.command(name="forward-force")
 @click.option(
-    "--ip", help="IP address of the Unity server.", default="127.0.0.1", type=str
+    "--ip",
+    default="127.0.0.1",
+    help="IP address of the Unity server.",
+    show_default=True,
+    type=str,
 )
-@click.option("--port", help="Port of the Unity server.", default=8055, type=int)
+@click.option(
+    "--port",
+    default=8055,
+    help="Port of the Unity server.",
+    show_default=True,
+    type=int,
+)
 def run(ip: str, port: int) -> None:
     """Run forward_force() command."""
     socket = sc.socket(sc.AF_INET, sc.SOCK_DGRAM)
