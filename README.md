@@ -13,7 +13,7 @@ The project is composed of a python package `flow` and of a Unity task. The pyth
 package can be installed on all platforms and uses [psychopy](https://www.psychopy.org/)
 to control an oddball auditory paradigm.
 
-## Install instructions
+## Install
 
 On macOS or Windows, the python package can be installed in a virtual environment with
 `pip` or [uv](https://docs.astral.sh/uv/) (drop-in replacement for `pip`, recommended):
