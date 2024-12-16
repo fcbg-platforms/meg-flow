@@ -62,7 +62,7 @@ def oddball(condition: str, mock: bool = False) -> None:
         # check for a message from Unity and potential hold
         socks = dict(poller.poll(timeout=10))
         if socket in socks and socks[socket] == zmq.POLLIN:
-            hold = _check_message_for_hold(socket, poller)
+            hold = _read_message(socket, poller)
         if hold:
             logger.info("Holding at trial %i / %i", k, trials[-1][0])
             sounds["standard"].play(when=ptb.GetSecs() + DURATION_STIM)
@@ -82,14 +82,14 @@ def oddball(condition: str, mock: bool = False) -> None:
     input(">>> Press ENTER to continue and close the window.")
 
 
-def _check_message_for_hold(socket) -> bool:
+def _callback_on_press(key):
+    """Callback function to call when a key is pressed."""  # noqa: D401
+    logger.info("Response %s pressed.", key)
+
+
+def _read_message(socket) -> bool:
     """Check if we received a message from Unity."""
     message = socket.recv_string()  # Receive the message
     logger.info("Received message from Unity: %s", message)
     socket.send_string("ACK")
     return _MESSAGES.get(message)
-
-
-def _callback_on_press(key):
-    """Callback function to call when a key is pressed."""  # noqa: D401
-    logger.info("Response %s pressed.", key)
