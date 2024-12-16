@@ -63,7 +63,7 @@ def oddball(condition: str, mock: bool = False) -> None:
         # check for a message from Unity and potential hold
         socks = dict(poller.poll(timeout=10))
         if socket in socks and socks[socket] == zmq.POLLIN:
-            hold = _read_message(socket, poller)
+            hold = _read_message(socket)
         if hold:
             logger.info("Holding at trial %i / %i", k, trials[-1][0])
             sounds["standard"].play(when=ptb.GetSecs() + DURATION_STIM)
