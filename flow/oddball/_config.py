@@ -10,7 +10,7 @@ TRIGGERS: dict[str, int] = {
     "hold": 4,
 }
 AUDIO_DEVICE: str = "Speakers (SPL Crimson 2.9.86.25)"
-
+AUDIO_VOLUME: float = 0.1
 
 # check the variables
 check_type(DURATION_STIM, ("numeric",), "DURATION_STIM")

@@ -58,7 +58,7 @@ def parse_trial_list(fname: Path) -> list[tuple[int, str]]:
 
 
 def _load_sounds(
-    trials: list[tuple[int, str]], duration: float, device: str
+    trials: list[tuple[int, str]], duration: float, device: str, volume: float
 ) -> dict[str, SoundPTB]:
     """Create psychopy sound objects."""
     from psychopy.sound import setDevice
@@ -73,18 +73,20 @@ def _load_sounds(
     sounds["standard"] = SoundPTB(
         fname_standard, secs=duration, hamming=True, name="stim", sampleRate=48000
     )
+    sounds["standard"].setVolume(volume)
     fname_target = files("flow.oddball") / "sounds" / "high_tone-48000.wav"
     fname_target = ensure_path(fname_target, must_exist=True)
     sounds["target"] = SoundPTB(
         fname_target, secs=duration, hamming=True, name="stim", sampleRate=48000
     )
-
+    sounds["target"].setVolume(volume)
     novels = [trial[1] for trial in trials if trial[1].startswith("wav")]
     for novel in novels:
         fname = files("flow.oddball") / "sounds" / f"{novel}-48000.wav"
         sounds[novel] = SoundPTB(
             fname, secs=duration, hamming=True, name="stim", sampleRate=48000
         )
+        sounds[novel].setVolume(volume)
     return sounds
 
 

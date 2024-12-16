@@ -11,6 +11,7 @@ from ..utils._checks import check_type, check_value
 from ..utils.logs import logger
 from ._config import (
     AUDIO_DEVICE,
+    AUDIO_VOLUME,
     DURATION_ITI,
     DURATION_STIM,
     TRIGGER_ADDRESS,
@@ -49,7 +50,7 @@ def oddball(condition: str, mock: bool = False) -> None:
     # load trials and sounds
     fname = files("flow.oddball") / "trialList" / f"{condition}.txt"
     trials = parse_trial_list(fname)
-    sounds = _load_sounds(trials, DURATION_STIM, AUDIO_DEVICE)
+    sounds = _load_sounds(trials, DURATION_STIM, AUDIO_DEVICE, AUDIO_VOLUME)
     # prepare triggers
     trigger = MockTrigger() if mock else ParallelPortTrigger(TRIGGER_ADDRESS)
     # prepare fixation cross window
