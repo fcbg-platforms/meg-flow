@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: mscheltienne/setup-psychopy@0.1.6
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - run: uv pip install --quiet --system .[test]
       - run: flow sys-info --developer
       - run: pytest flow --cov=flow --cov-report=xml --cov-config=pyproject.toml
